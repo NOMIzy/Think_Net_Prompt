@@ -1,0 +1,334 @@
+{
+"LOAD": {
+        "isFunc": false,
+        "isPlanner": true,
+        "rules": {
+            "action_description":"按照规定的技术要求，将若干个零件接合成部件或将若干个零件和部件接合成产品的劳动过程，称为装配",
+            "parameters_description":"object-对需要装配的产品的描述 position-需要装配产品的位置的描述 info-这个任务的描述，包括装配目标、产品安装指南",
+            "possible_subtasks": [
+                "LocateParts",
+                "PickParts",
+                "ClassifyParts",
+                "PlanAssembly",
+                "FinalCheck",
+                "ReportCompletion"
+            ],
+            "subtask_descriptions": [
+                "LocateParts-根据指定的零件信息，查找并定位所有需要的零件，注意保留零件的个数信息",
+                "PickParts-按照所需零件列表，将每一个零件取出来，注意保留零件的个数信息",
+                "ClassifyParts-对取出的零件进行识别和归类",
+                "PlanAssembly-根据零件的类型和数量，规划4个具体安装的组装过程。也就是说，如果目前的组装指南信息还很长，那么将组装成品的信息拆分成个逻辑上的有序段落，交给新的PlanAssembly命令；如果目前已经只剩下4个非常具体的装配步骤了，那么分别为这4个装配步骤生成AssembleParts命令",
+                "FinalCheck-在整个组装过程完成后，进行最后的检查",
+                "ReportCompletion-如果一切检查都通过，报告组装完成"
+            ],
+            "possible_subtask_sequences": [
+                ["LocateParts", "PickParts", "ClassifyParts", "PlanAssembly",  "FinalCheck", "ReportCompletion"]
+            ]
+        },
+        "parameters":[
+            {
+                "name": "object",
+                "type": "str",
+                "description": "需要装配的物品描述"
+            },
+            {
+                "name": "position",
+                "type": "str",
+                "description": "物品装配的位置描述，如果没有提及，就写为默认位置"
+            },
+            {
+                "name": "info",
+                "type": "str",
+                "description": "装配这个物品需要的信息，包括物品描述、安装指南、检查点信息、装配目标等"
+            }
+        ],
+        "planner": "planner_LOAD",
+        "function": "none"
+    },
+    "LocateParts": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "根据指定的零件信息，查找并定位所有需要的零件",
+            "parameters_description": "partsList-需要找到的零件列表，注意每种零件记录数量，如‘四个齿轮’",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters": [
+                {
+                    "name": "partsList",
+                    "type": "List[str]",
+                    "description": " 需要找到的零件列表，注意每种零件记录数量，如‘四个齿轮’"
+                }
+        ],
+
+        "function": "function_LocateParts"
+    },
+    "PickParts": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "按照所需零件列表，将每一个零件取出来",
+            "parameters_description": "partsList-需要拿取的零件列表，注意每种零件记录数量，如‘四个齿轮’",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters":[
+            {
+                "name": "partsList",
+                "type": "List[str]",
+                "description": "需要拿取的零件列表，注意每种零件记录数量，如‘四个齿轮’"
+            }
+
+        ],
+
+        "function": "function_PickParts"
+    },
+    "ClassifyParts": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "对取出的零件进行识别和归类",
+            "parameters_description": null,
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters": [],
+
+
+        "function": "function_ClassifyParts"
+    },
+    "PlanAssembly": {
+        "isFunc": false,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "根据零件的类型和数量，规划4个具体安装的组装过程。也就是说，如果目前的组装指南信息还很长，那么将组装成品的信息拆分成逻辑上的有序段落，交给新的PlanAssembly命令；如果目前已经只剩下4个非常具体的装配步骤了，那么分别为这4个装配步骤生成AssembleParts命令",
+            "parameters_description": "assemblyInstructions-组装指南，描述了如何组装成品的信息",
+            "possible_subtasks": [
+                "AssembleParts",
+                "PlanAssembly"
+            ],
+            "subtask_descriptions": [
+                "PlanAssembly-根据零件的类型和数量，规划4个具体安装的组装过程。也就是说，如果目前的组装指南信息还很长，那么将组装成品的信息拆分成个逻辑上的有序段落，交给新的PlanAssembly命令；如果目前已经只剩下4个非常具体的装配步骤了，那么分别为这4个装配步骤生成AssembleParts命令",
+                "AssembleParts-需要安装，拿取的那一个零件（注意只有一个，如果有4个同样的零件要做极其相似的操作，也要一个一个做，这意味着要生成4个相似的命令，尽量猜测物体的实际特性，例如将四个东西分别装在右上角、右下角、左上角、左下角），不同类型的东西，只要不是一个东西，就应该分开做"
+            ],
+            "possible_subtask_sequences": [
+                ["AssembleParts", "AssembleParts", "AssembleParts", "AssembleParts",  "AssembleParts", "AssembleParts"],
+                ["AssembleParts", "AssembleParts", "AssembleParts"],
+                ["PlanAssembly", "PlanAssembly"],
+                ["PlanAssembly", "PlanAssembly","PlanAssembly", "PlanAssembly"],
+                ["PlanAssembly", "PlanAssembly", "AssembleParts", "AssembleParts"]
+            ]
+        },
+        "parameters": [
+
+                {
+                    "name": "assemblyInstructions",
+                    "type": "str",
+                    "description": "组装指南，描述了如何组装成品的信息"
+                }
+
+        ],
+
+        "planner": null,
+        "function": null
+    },
+    "AssembleParts": {
+        "isFunc": false,
+        "isPlanner":false,
+        "rules": {
+            "action_description": "装配一个零件，识别这个零件，获取它，识别被安装件，执行安装操作",
+            "parameters_description": "assemblyPart-需要装配的特定零件的名称或描述，assemblyObject-指定位置，被安装的物体的描述，assemblyPlan-组装计划，描述如何组装零件的信息",
+            "possible_subtasks": [
+                "IdentifyPart",
+                "PickPart",
+                "PlacePart",
+                "CheckPartAssembly"
+            ],
+            "subtask_descriptions": [
+                "IdentifyPart-识别并定位需要装配的特定零件",
+                "PickPart-获取识别到的特定零件",
+                "PlacePart-在指定位置完成特定零件的装配动作",
+                "CheckPartAssembly-组装过程中或组装完成后，检查组装情况"
+            ],
+            "possible_subtask_sequences": [
+                ["IdentifyPart", "PickPart", "PlacePart", "CheckPartAssembly"]
+
+            ]
+        },
+        "parameters": [
+            {
+                "name": "assemblyPart",
+                "type": "str",
+                "description": "特定零件的名称或描述"
+            },
+            {
+                "name": "assemblyObject",
+                "type": "str",
+                "description": "指定位置，被安装的物体的描述"
+            },
+            {
+                "name": "assemblyPlan",
+                "type": "str",
+                "description": "组装计划，描述如何组装零件的信息"
+            }
+        ],
+
+        "function": null,
+        "planner": null
+    },
+    "IdentifyPart": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "识别并定位需要装配的特定零件",
+            "parameters_description": "assemblyPart-需要识别并定位的特定零件的名称或描述",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters":[
+            {
+                "name": "assemblyPart",
+                "type": "str",
+                "description": "需要识别并定位的特定零件的名称或描述"
+            }
+
+        ],
+
+
+        "function": "function_IdentifyPart"
+    },
+    "PickPart": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "获取识别到的特定零件",
+            "parameters_description": "assemblyPart-需要获取的特定零件的名称或描述",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters":[
+            {
+                "name": "assemblyPart",
+                "type": "str",
+                "description": "需要获取的特定零件的名称或描述"
+            }
+
+        ],
+
+        "function": "function_PickPart"
+    },
+    "PlacePart": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "在指定位置完成特定零件的装配动作",
+            "parameters_description": "assemblyPart-特定零件的名称或描述 assemblyObject-指定位置，被安装的物体的描述 assemblyPlan-组装计划，描述如何组装零件的信息",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters": [
+            {
+                "name": "assemblyPart",
+                "type": "str",
+                "description": "需要获取的特定零件的名称或描述"
+            },
+            {
+                "name": "assemblyObject",
+                "type": "str",
+                "description": "指定位置，被安装的物体的描述"
+            },
+            {
+                "name": "assemblyPlan",
+                "type": "str",
+                "description": "组装计划，描述如何组装零件的信息"
+            }
+        ],
+
+
+        "function": "function_PlacePart"
+    },
+    "CheckPartAssembly": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "组装过程中或组装完成后，检查组装情况",
+            "parameters_description": "assemblyPart-特定零件的名称或描述 assemblyObject-指定位置，被安装的物体的描述 checkPoints-需要检查的项目列表",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters": [
+
+                {
+                    "name": "assemblyPart",
+                    "type": "str",
+                    "description": "特定零件的名称或描述"
+                },
+                {
+                    "name": "assemblyObject",
+                    "type": "str",
+                    "description": "指定位置，被安装的物体的描述"
+                },
+                {
+                    "name": "checkPoints",
+                    "type": "List[str]",
+                    "description": "需要检查的项目列表"
+                }
+
+        ],
+
+        "function": "function_CheckAssembly"
+    },
+
+    "FinalCheck": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "在整个组装过程完成后，进行最后的检查",
+            "parameters_description": "checkPoints-需要检查的项目列表",
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters": [
+
+                {
+                    "name": "checkPoints",
+                    "type": "List[str]",
+                    "description": "需要检查的项目列表"
+                }
+
+        ],
+
+        "function": "function_FinalCheck"
+    },
+    "ReportCompletion": {
+        "isFunc": true,
+        "isPlanner": false,
+        "rules": {
+            "action_description": "如果一切检查都通过，报告组装完成",
+            "parameters_description": null,
+            "possible_subtasks": [
+            ],
+            "subtask_descriptions": [
+            ]
+        },
+        "parameters": [],
+        "function": "function_ReportCompletion"
+    }
+}
